@@ -10,8 +10,9 @@ dt = S.t
 %
 histfit(dt)
 %
+N = 100
 dt_obs = mean(dt)
-dt_obs_err = std(dt)
+dt_obs_err = std(dt) / sqrt(N)
 dt_obs_delta = dt_obs_err / dt_obs
 
 
