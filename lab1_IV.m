@@ -49,23 +49,27 @@ t = time(i0:i1)
 % parabolic regression
 figure()
 plot(t, x, '.')
-[a1, a1_low, a1_high] = parabolicfit(t, x)
-
+[a1, a1_low, a1_high, fit1] = parabolicfit(t, x)
+hold on
+plot(fit1, 'predfunc')
 % v = dx/dt first derivative
-n = 10
+n = 1
 [t1, v] = derivative1(t, x, n)
 
 % linear regression
 figure()
 plot(t1, v)
 [fitresult, gof]  = fit(t1, v, 'poly1')
+hold on
+plot(fitresult, 'predfunc')
+hold off
 ci = confint(fitresult, 0.67) % 67% confidence = 1 sigma
 a2 = fitresult.p1
 a2_low = ci(1,1)
 a2_hi = ci(2,1)
 
 % a = dx^2/dt^2 second derivative
-n = 10
+n = 1
 [t1, a] = derivative2(t, x, n)
 % linear regression
 figure()
@@ -82,14 +86,18 @@ xup = x(imax:-1:1)
 tup = t(1:imax) - t(1)
 xdown = x(imax:end)
 tdown = t(imax:end) - t(imax)
+% confidence
+[aup, aup_low, aup_high, fitup] = parabolicfit(tup, xup)
+[adown, adown_low, adown_high, fitdown] = parabolicfit(tdown, xdown)
+% plots
 figure()
 plot(tup, xup, 'r.')
 hold on
+plot(fitup, 'predfunc')
 plot(tdown, xdown, 'b.')
+plot(fitdown, 'predfunc')
 hold off
-% confidence
-[aup, aup_low, aup_high] = parabolicfit(tup, xup)
-[adown, adown_low, adown_high] = parabolicfit(tdown, xdown)
+
 
  
 
@@ -109,7 +117,7 @@ function [t1, a] = derivative2(t, x, n)
     a = dx ./ (deltat * n)^2
 end
 
-function [a, a_low, a_hi] = parabolicfit(t, x)
+function [a, a_low, a_hi, fitresult] = parabolicfit(t, x)
     [fitresult, gof]  = fit(t, x, 'poly2')
     ci = confint(fitresult, 0.67) % 67% confidence = 1 sigma
     a = fitresult.p1 * 2
