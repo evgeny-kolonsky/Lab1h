@@ -9,6 +9,7 @@ url = 'https://raw.githubusercontent.com/evgeny-kolonsky/Lab1_Cart/main/cart.txt
 data = readmatrix(url);
 t = data(:,2);
 figure(1)
+hold on
 plot(t,'.')
 
 mu = mean(t);
@@ -17,12 +18,13 @@ N = length(t);
 sigma_mu = sigma / sqrt(N);
 
 % suspected_outlier 
-[suspected, ix] = max(abs(t - mu)/sigma);
+[suspected, ix] = max(abs(t - mu)/sigma/sqrt(2));
 
 P = (1 - cdf('normal', suspected)) + cdf('normal', -suspected)
 % 'Chauvene criterion value to be compared with 1/2: {N*P:.1e}')
 if N * P < .5
   % 'outlier: to be deleted'
+  plot(ix, t(ix), 'rx')
   t(ix) = [];
   % new average and sigma
   mu = mean(t);
@@ -30,7 +32,8 @@ if N * P < .5
   N = N - 1;
   sigma_mu = sigma / sqrt(N);
 end
-
+hold off
+legend('data', 'outlier')
 
 
 figure(2)
