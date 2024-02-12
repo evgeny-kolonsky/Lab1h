@@ -21,7 +21,7 @@ sigma_mu = sigma / sqrt(N);
 [suspected, ix] = max(abs(t - mu)/sigma/sqrt(2));
 
 P = (1 - cdf('normal', suspected)) + cdf('normal', -suspected)
-% 'Chauvene criterion value to be compared with 1/2: {N*P:.1e}')
+% 'Chauvenet criterion value to be compared with 1/2: {N*P:.1e}')
 if N * P < .5
   % 'outlier: to be deleted'
   plot(ix, t(ix), 'rx')
