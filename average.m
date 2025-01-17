@@ -3,11 +3,11 @@
 
 close all
 clear
-
+%% Experiment
 % import measurements to vector t
-url = 'https://raw.githubusercontent.com/evgeny-kolonsky/Lab1_Cart/main/cart.txt';
+url = "delta_t.txt"; % place here path to your data
 data = readmatrix(url);
-t = data(:,2);
+t = data(:,2); % time in column 2
 figure(1)
 hold on
 plot(t,'.')
@@ -17,11 +17,14 @@ sigma = std(t);
 N = length(t);
 sigma_mu = sigma / sqrt(N);
 
-% suspected_outlier 
+% Chauvenet outlier rejection test
+% in general case shoud be repeated interatively
+
+% suspected_outlier and his index
 [suspected, ix] = max(abs(t - mu)/sigma/sqrt(2));
 
-P = (1 - cdf('normal', suspected)) + cdf('normal', -suspected)
-% 'Chauvenet criterion value to be compared with 1/2: {N*P:.1e}')
+P = (1 - cdf('normal', suspected)) + cdf('normal', -suspected);
+% Chauvenet criterion value to be compared with 1/2
 if N * P < .5
   % 'outlier: to be deleted'
   plot(ix, t(ix), 'rx')
@@ -34,21 +37,27 @@ if N * P < .5
 end
 hold off
 legend('data', 'outlier')
+xlabel('Measurements numbered')
+ylabel('Cart passing gate time, s')
 
 
 figure(2)
-txt1 = sprintf('Measured time: \n %.1f +- %.1f ms', mu*1e3, sigma_mu*1e3);
+txt1 = sprintf('Measured average time: \n %.1f ± %.1f ms', mu*1e3, sigma_mu*1e3);
 histfit(t * 1e3)
 title(txt1)
+xlabel('Cart passing gate time, ms')
+ylabel('Events frequency')
 
 %% Model
-L = 1270e-3;  dL = 1e-3;  %mm
-l = 127.7e-3; dl = 1e-3; % mm
-s0 = 270e-3; ds0 = 1e-3; %cm
-h = 9.1e-3; dh = .1e-3; %mm
-g = 9.8; dg = 1e-4; % m/c2
 
-s1 = s0 + l; ds1 = sqrt(dl^2 + ds0^2);
+% geometrical parameters
+L = 1272e-3;  dL = 10e-3;  % mm
+l = 125e-3; dl = 1e-3; % mm
+s0 = 200e-3; ds0 = 1e-3; % mm
+h = 9.1e-3; dh = .1e-3; % mm
+g = 9.7949; dg = 1e-4; % m/s2 - error is negligible
+
+s1 = s0 + l; ds1 = sum_errors(dl, ds0);
 
 
 % Relative errors
@@ -57,24 +66,26 @@ el = dl / l;
 es0 = ds0 / s0;
 es1 = ds1 / s1;
 eh = dh / h;
-eg = dg / g;
 
 % acceleration
 a = g * h / L;
-ea = sqrt(eg^2 + eh^2 + eL^2);
+ea = sum_errors(eh,  eL);
 
 % time 
-t0 = sqrt(2 * s0 /a)
-et0 = sqrt(es0^2+ ea^2)/2;
+t0 = sqrt(2 * s0 /a);
+et0 = sum_errors(es0, ea)/2;
 dt0 = t0 * et0;
 
-t1 = sqrt(2 * s1 /a)
-et1 = sqrt(es1^2+ ea^2)/2;
+t1 = sqrt(2 * s1 /a);
+et1 = sum_errors(es1, ea)/2;
 dt1 = t1 * et1;
 
 deltat = t1 - t0;
-ddeltat = sqrt(dt1^2 + dt0^2);
+ddeltat = sum_errors(dt1, dt0);
 edeltat = ddeltat /  deltat;
 
-txt2= sprintf('Expected time: \n %.0f +- %.0f s', deltat*1e3, ddeltat*1e3);
+txt2= sprintf('Expected time: \n %.0f ± %.0f ms', deltat*1e3, ddeltat*1e3);
 
+function [answer] = sum_errors(dx, dy)
+    answer = sqrt(dx^2 + dy^2);
+end
